@@ -3,89 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mmcode | Bot Panel</title>
+    <title>mmcode | Advanced Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #7d5fff; --bg: #0b0518; --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; background: radial-gradient(circle at 50% 50%, #1e123a 0%, #0b0518 100%); }
         #particles-js { position: fixed; width: 100%; height: 100%; z-index: -1; }
-        .dot { position: absolute; background: white; border-radius: 50%; opacity: 0.2; animation: twinkle var(--duration) infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.4; } }
-
-        .container { width: 90%; max-width: 800px; z-index: 10; padding: 40px 0; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 2.5rem; margin: 0; letter-spacing: -1px; }
-        .header span { color: var(--primary); }
-
-        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; margin-bottom: 20px; }
-        
-        .btn { padding: 15px 25px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; text-transform: uppercase; color: white; }
-        .btn-discord { background: #5865F2; width: 100%; font-size: 1.1rem; }
+        .container { width: 95%; max-width: 900px; z-index: 10; padding: 40px 0; }
+        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 20px; }
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; color: white; }
+        .btn-discord { background: #5865F2; width: 100%; }
         .btn-primary { background: var(--primary); width: 100%; margin-top: 20px; }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-
-        #dashboard { display: none; }
-        .server-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .server-item { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
-
-        /* Edytor Embed */
-        .embed-preview { border-left: 4px solid var(--primary); background: #2f3136; padding: 20px; border-radius: 4px; text-align: left; margin-top: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; color: white; font-family: inherit; box-sizing: border-box; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; color: white; box-sizing: border-box; }
         
-        .command-list { margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
-        .cmd-item { display: flex; justify-content: space-between; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; }
-        .del-btn { color: #ff4d4d; cursor: pointer; font-weight: bold; }
+        .option-box { background: rgba(255,255,255,0.03); border: 1px dashed var(--primary); padding: 15px; border-radius: 15px; margin-top: 10px; position: relative; }
+        .remove-opt { position: absolute; top: 10px; right: 10px; color: #ff4d4d; cursor: pointer; font-size: 0.8rem; }
+        .embed-preview { border-left: 4px solid var(--primary); background: #2f3136; padding: 15px; border-radius: 4px; margin: 10px 0; }
+        .server-item { background: var(--glass); border: 1px solid var(--glass-border); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div id="particles-js"></div>
     <div class="container">
-        <div class="header"><h1>mmcode<span>.panel</span></h1></div>
-
-        <div id="login-section" class="card">
-            <p style="text-align: center; opacity: 0.7;">Zaloguj się, aby zarządzać swoimi botami na serwerach.</p>
+        <div id="login-section" class="card" style="text-align: center;">
+            <h1>mmcode<span>.panel</span></h1>
             <button class="btn btn-discord" onclick="loginDiscord()">ZALOGUJ PRZEZ DISCORD</button>
         </div>
 
-        <div id="dashboard">
-            <div class="card">
-                <h3 id="userName">Witaj!</h3>
-                <div id="serverList" class="server-grid"></div>
-            </div>
+        <div id="dashboard" style="display:none;">
+            <div class="card"><h3>Twoje Serwery</h3><div id="serverList"></div></div>
 
             <div id="editor" class="card" style="display:none;">
-                <h2 id="targetServer">Konfiguracja</h2>
-                <input type="text" id="cmdName" placeholder="Nazwa komendy (np. ticket)">
+                <h2 id="targetServer" style="color:var(--primary)">Konfiguracja</h2>
+                <input type="text" id="cmdName" placeholder="Nazwa komendy (np. pomoc)">
                 
                 <div class="embed-preview">
-                    <input type="text" id="embTitle" placeholder="Tytuł Embeda (np. Pomoc)" style="font-weight: bold; font-size: 1.2rem; background: transparent; border: none; border-bottom: 1px solid #444;">
-                    <textarea id="embDesc" rows="4" placeholder="Treść wiadomości..." style="background: transparent; border: none;"></textarea>
-                    <input type="text" id="embImg" placeholder="Link do obrazka (opcjonalnie)">
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin: 0;">GŁÓWNA WIADOMOŚĆ (Z LISTĄ WYBORU)</p>
+                    <input type="text" id="mainTitle" placeholder="Tytuł główny">
+                    <textarea id="mainDesc" placeholder="Opis główny..."></textarea>
                 </div>
 
-                <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="addTicket" style="width: auto;"> <span>Dodaj przycisk Ticketa?</span>
+                <div id="optionsContainer">
+                    <h4>Opcje w rozwijanej liście:</h4>
                 </div>
+                <button class="btn" style="background: #2ecc71; width: 100%;" onclick="addOption()">+ DODAJ OPCJĘ DO LISTY</button>
 
-                <button class="btn btn-primary" onclick="saveConfig()">ZAPISZ I AKTYWUJ</button>
-                
-                <div class="command-list" id="activeCmds">
-                    <h4>Aktywne komendy na tym serwerze:</h4>
-                    <div id="cmdsContainer"></div>
-                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">WYŚLIJ KONFIGURACJĘ DO BOTA</button>
             </div>
         </div>
     </div>
 
     <script>
-        const CLIENT_ID = "1496484669573566564";
+        const CLIENT_ID = "TWOJE_ID"; 
         const REDIRECT_URI = "https://grapliss88-lab.github.io/kutas/";
         const BOT_API = "http://152.53.179.161:7023/api";
 
         function loginDiscord() {
-            // Czyścimy stary token, żeby wymusić logowanie za każdym razem
-            const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds&prompt=login`;
-            window.location.href = url;
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds&prompt=login`;
         }
 
         window.onload = () => {
@@ -94,82 +68,69 @@
             if (token) {
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                loadData(token);
+                fetchGuilds(token);
             }
         };
 
-        async function loadData(token) {
-            const userReq = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${token}` } });
-            const user = await userReq.json();
-            document.getElementById('userName').innerText = `Witaj, ${user.username}!`;
-
-            const guildsReq = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
-            const guilds = await guildsReq.json();
-            const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
-
+        async function fetchGuilds(token) {
+            const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
+            const guilds = await res.json();
             const list = document.getElementById('serverList');
-            adminGuilds.forEach(g => {
-                const d = document.createElement('div');
-                d.className = 'server-item';
-                d.innerHTML = `<span>${g.name}</span><button class="btn" style="background:var(--primary); padding:5px 10px;" onclick="openEditor('${g.id}', '${g.name}')">EDYTUJ</button>`;
-                list.appendChild(d);
+            guilds.filter(g => (g.permissions & 0x8) === 0x8).forEach(g => {
+                list.innerHTML += `<div class="server-item"><span>${g.name}</span><button class="btn" style="background:var(--primary)" onclick="openEditor('${g.id}', '${g.name}')">ZARZĄDZAJ</button></div>`;
             });
+        }
+
+        let optionsCount = 0;
+        function addOption() {
+            optionsCount++;
+            const id = `opt_${optionsCount}`;
+            const html = `
+                <div class="option-box" id="${id}">
+                    <span class="remove-opt" onclick="document.getElementById('${id}').remove()">USUŃ X</span>
+                    <input type="text" class="opt-label" placeholder="Nazwa opcji (np. Kupno rangi)">
+                    <div class="embed-preview" style="border-color: #2ecc71">
+                        <p style="font-size: 0.7rem; opacity: 0.6;">EMBED PO OTWARCIU TICKETA</p>
+                        <input type="text" class="opt-title" placeholder="Tytuł w tickecie">
+                        <textarea class="opt-desc" placeholder="Treść w tickecie..."></textarea>
+                    </div>
+                </div>`;
+            document.getElementById('optionsContainer').insertAdjacentHTML('beforeend', html);
         }
 
         let currentGuild = "";
-
-        async function openEditor(id, name) {
+        function openEditor(id, name) {
             currentGuild = id;
-            document.getElementById('targetServer').innerText = `Serwer: ${name}`;
+            document.getElementById('targetServer').innerText = name;
             document.getElementById('editor').style.display = 'block';
-            loadCommands();
-        }
-
-        async function loadCommands() {
-            try {
-                const r = await fetch(`${BOT_API}/get/${currentGuild}`);
-                const data = await r.json();
-                const cont = document.getElementById('cmdsContainer');
-                cont.innerHTML = "";
-                data.forEach(c => {
-                    cont.innerHTML += `<div class="cmd-item"><span>/${c.cmd}</span><span class="del-btn" onclick="deleteCmd('${c.cmd}')">USUŃ</span></div>`;
-                });
-            } catch(e) { console.log("Błąd pobierania"); }
         }
 
         async function saveConfig() {
+            const options = [];
+            document.querySelectorAll('.option-box').forEach(box => {
+                options.append({
+                    label: box.querySelector('.opt-label').value,
+                    ticket_title: box.querySelector('.opt-title').value,
+                    ticket_desc: box.querySelector('.opt-desc').value
+                });
+            });
+
             const data = {
                 guild_id: currentGuild,
                 cmd: document.getElementById('cmdName').value,
-                title: document.getElementById('embTitle').value,
-                desc: document.getElementById('embDesc').value,
-                img: document.getElementById('embImg').value,
-                ticket: document.getElementById('addTicket').checked
+                main_title: document.getElementById('mainTitle').value,
+                main_desc: document.getElementById('mainDesc').value,
+                options: options
             };
 
-            const res = await fetch(`${BOT_API}/save`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if(res.ok) { alert("Zapisano!"); loadCommands(); }
-            else { alert("Błąd połączenia z botem!"); }
-        }
-
-        async function deleteCmd(cmd) {
-            await fetch(`${BOT_API}/delete/${currentGuild}/${cmd}`, { method: 'DELETE' });
-            loadCommands();
-        }
-
-        // Particles
-        const p = document.getElementById('particles-js');
-        for(let i=0; i<30; i++) {
-            const d = document.createElement('div'); d.className = 'dot';
-            d.style.left = Math.random()*100+'%'; d.style.top = Math.random()*100+'%';
-            const s = Math.random()*3+'px'; d.style.width = s; d.style.height = s;
-            d.style.setProperty('--duration', Math.random()*3+2+'s');
-            p.appendChild(d);
+            try {
+                const res = await fetch(`${BOT_API}/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) alert("✅ Wysłano do bota!");
+            } catch(e) { alert("❌ Błąd połączenia z IP 152.53.179.161:7023"); }
         }
     </script>
 </body>
