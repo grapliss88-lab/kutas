@@ -1,37 +1,95 @@
-<div class="card">
-    <h2>Konfiguracja Ticketów</h2>
-    <input type="text" id="guildId" placeholder="ID Serwera">
-    <input type="text" id="cmdName" placeholder="Nazwa komendy (np. gowno)">
-    <input type="text" id="ticketTitle" placeholder="Tytuł Embedu">
-    <textarea id="ticketDesc" placeholder="Opis..."></textarea>
-    
-    <button class="btn" onclick="saveToBot()">ZAPISZ I WYŚLIJ DO BOTA</button>
+<button class="btn order-btn" id="loginBtn" onclick="loginDiscord()" style="background:#5865F2; grid-column: span 2;">ZALOGUJ PRZEZ DISCORD</button>
+
+<div id="dashboard" style="display:none; grid-column: span 2; width: 100%;">
+    <h2 style="text-align:center; color:var(--primary);">Twoje Serwery</h2>
+    <div id="serverList"></div>
+</div>
+
+<div id="configModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('configModal')">×</span>
+        <h2 id="confGuildName">Konfiguracja</h2>
+        <input type="hidden" id="confGuildId">
+        <input type="text" id="cmdName" placeholder="Nazwa komendy (np. gowno)">
+        <input type="text" id="embedTitle" placeholder="Tytuł Ticketa">
+        <textarea id="embedDesc" rows="4" placeholder="Opis..."></textarea>
+        <button class="submit-btn" onclick="saveToBot()">ZAPISZ KOMENDĘ W BOCIE</button>
+    </div>
 </div>
 
 <script>
+// --- KONFIGURACJA OAUTH2 ---
+const CLIENT_ID = "TWÓJ_CLIENT_ID"; 
+const REDIRECT_URI = "https://twoja-strona.github.io/"; // TWOJA DOMENA GITHUB
+const BOT_API_URL = "http://IP-TWOJEGO-HOSTINGU:PORT/api/save"; // IP bota z Flaska
+
+// 1. Logowanie
+function loginDiscord() {
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
+    window.location.href = url;
+}
+
+// 2. Po powrocie z Discorda (sprawdzanie tokenu w URL)
+window.onload = () => {
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const token = fragment.get('access_token');
+
+    if (token) {
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        fetchServers(token);
+    }
+};
+
+// 3. Pobieranie serwerów z API Discorda
+async function fetchServers(token) {
+    const response = await fetch('https://discord.com/api/users/@me/guilds', {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const guilds = await response.json();
+    const list = document.getElementById('serverList');
+
+    // Filtrujemy: tylko serwery gdzie user ma Admina (0x8)
+    const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
+
+    adminGuilds.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'btn rules-btn';
+        div.style.marginBottom = '10px';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.innerHTML = `
+            <span>${g.name}</span>
+            <button onclick="openConfig('${g.id}', '${g.name}')" style="background:var(--primary); border:none; color:white; border-radius:5px; cursor:pointer;">USTAW</button>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function openConfig(id, name) {
+    document.getElementById('confGuildId').value = id;
+    document.getElementById('confGuildName').innerText = name;
+    openModal('configModal');
+}
+
+// 4. Wysyłanie danych do Twojego bota na hostingu
 async function saveToBot() {
     const data = {
-        guild_id: document.getElementById('guildId').value,
-        command_name: document.getElementById('cmdName').value,
-        title: document.getElementById('ticketTitle').value,
-        description: document.getElementById('ticketDesc').value
+        guild_id: document.getElementById('confGuildId').value,
+        cmd: document.getElementById('cmdName').value,
+        title: document.getElementById('embedTitle').value,
+        desc: document.getElementById('embedDesc').value
     };
 
-    // ZMIEŃ ADRES PONIŻEJ na IP swojego serwera, gdzie działa bot!
-    const SERVER_IP = "node.zytrano.top:7023";
-
     try {
-        const response = await fetch(SERVER_IP, {
+        const res = await fetch(BOT_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        
-        const result = await response.json();
-        alert("Bot otrzymał dane: " + result.message);
-    } catch (error) {
-        alert("Błąd połączenia z botem! Upewnij się, że serwer bota działa.");
-        console.error(error);
+        if(res.ok) alert("✅ Bot otrzymał konfigurację!");
+    } catch (e) {
+        alert("❌ Błąd połączenia z botem. Sprawdź czy bot działa i ma otwarty port.");
     }
 }
 </script>
