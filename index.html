@@ -1,95 +1,265 @@
-<button class="btn order-btn" id="loginBtn" onclick="loginDiscord()" style="background:#5865F2; grid-column: span 2;">ZALOGUJ PRZEZ DISCORD</button>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mmcode.online | Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7d5fff;
+            --bg: #0f081d;
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
 
-<div id="dashboard" style="display:none; grid-column: span 2; width: 100%;">
-    <h2 style="text-align:center; color:var(--primary);">Twoje Serwery</h2>
-    <div id="serverList"></div>
-</div>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #1e123a 0%, #0f081d 100%);
+        }
 
-<div id="configModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('configModal')">×</span>
-        <h2 id="confGuildName">Konfiguracja</h2>
-        <input type="hidden" id="confGuildId">
-        <input type="text" id="cmdName" placeholder="Nazwa komendy (np. gowno)">
-        <input type="text" id="embedTitle" placeholder="Tytuł Ticketa">
-        <textarea id="embedDesc" rows="4" placeholder="Opis..."></textarea>
-        <button class="submit-btn" onclick="saveToBot()">ZAPISZ KOMENDĘ W BOCIE</button>
+        #particles-js { position: fixed; width: 100%; height: 100%; z-index: -1; top:0; left:0; }
+        .dot { position: absolute; background: white; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.6; } }
+
+        .header-logo { text-align: center; z-index: 10; margin-bottom: 30px; }
+        .header-logo h1 { font-size: 3rem; margin: 0; letter-spacing: -2px; }
+        .header-logo span { color: var(--primary); }
+
+        .btn-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 90%;
+            max-width: 450px;
+            z-index: 10;
+        }
+
+        .btn {
+            padding: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            text-transform: uppercase;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .order-btn { background: var(--primary); box-shadow: 0 4px 15px rgba(125, 95, 255, 0.3); }
+        .rules-btn { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+        .panel-btn { grid-column: span 2; background: #5865F2; margin-top: 5px; } /* Kolor Discord */
+        
+        .banner-btn {
+            grid-column: span 2;
+            height: 110px;
+            border-radius: 15px;
+            border: 2px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 5px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .mc-banner { background-image: url('mc-banner.png'); }
+        .dc-banner { background-image: url('dc-banner.png'); }
+
+        .btn:hover, .banner-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); border-color: var(--primary); }
+
+        /* Styl dla listy serwerów po zalogowaniu */
+        #serverList { grid-column: span 2; display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .server-item {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); backdrop-filter: blur(15px); z-index: 100; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-content {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(20, 10, 40, 0.6); padding: 35px; border-radius: 25px;
+            border: 1px solid var(--glass-border); width: 90%; max-width: 500px;
+            text-align: center;
+        }
+        .close-btn { float: right; cursor: pointer; font-size: 2rem; opacity: 0.5; }
+
+        input, textarea { 
+            width: 100%; padding: 14px; margin: 8px 0; 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); 
+            border-radius: 12px; color: white; font-family: inherit; box-sizing: border-box;
+        }
+        .submit-btn { width: 100%; padding: 16px; background: var(--primary); border: none; color: white; font-weight: 600; border-radius: 12px; cursor: pointer; margin-top: 15px; }
+
+        .footer { position: fixed; bottom: 20px; z-index: 10; opacity: 0.5; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div id="particles-js"></div>
+
+    <div class="header-logo">
+        <h1>mmcode<span>.online</span></h1>
     </div>
-</div>
 
-<script>
-// --- KONFIGURACJA OAUTH2 ---
-const CLIENT_ID = "TWÓJ_CLIENT_ID"; 
-const REDIRECT_URI = "https://twoja-strona.github.io/"; // TWOJA DOMENA GITHUB
-const BOT_API_URL = "http://IP-TWOJEGO-HOSTINGU:PORT/api/save"; // IP bota z Flaska
+    <div class="btn-container">
+        <button class="btn order-btn" onclick="openModal('orderModal')">ZAMÓW</button>
+        <button class="btn rules-btn" onclick="openModal('rulesModal')">REGULAMIN</button>
+        
+        <button id="loginBtn" class="btn panel-btn" onclick="loginDiscord()">⚙️ PANEL ZARZĄDZANIA</button>
+        
+        <div id="serverList">
+            <h3 style="text-align: center; color: var(--primary); margin: 5px 0;">TWOJE SERWERY</h3>
+            </div>
 
-// 1. Logowanie
-function loginDiscord() {
-    const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
-    window.location.href = url;
-}
+        <div class="banner-btn mc-banner" onclick="openModal('mcModal')"></div>
+        <div class="banner-btn dc-banner" onclick="openModal('dcModal')"></div>
+    </div>
 
-// 2. Po powrocie z Discorda (sprawdzanie tokenu w URL)
-window.onload = () => {
-    const fragment = new URLSearchParams(window.location.hash.slice(1));
-    const token = fragment.get('access_token');
+    <div class="footer">mmcode.online © 2026</div>
 
-    if (token) {
-        document.getElementById('loginBtn').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        fetchServers(token);
-    }
-};
+    <div id="configModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('configModal')">×</span>
+            <h2 id="confGuildName" style="color:var(--primary)">Konfiguracja</h2>
+            <p style="font-size: 0.8rem; opacity: 0.7;">Ustaw komendę / i treść embeda</p>
+            <input type="hidden" id="confGuildId">
+            <input type="text" id="cmdName" placeholder="Nazwa komendy (np. pomoc)">
+            <input type="text" id="ticketTitle" placeholder="Tytuł wiadomości">
+            <textarea id="ticketDesc" rows="4" placeholder="Treść wiadomości w ticketach..."></textarea>
+            <button class="submit-btn" onclick="sendToBot()">AKTYWUJ W BOCIE</button>
+        </div>
+    </div>
 
-// 3. Pobieranie serwerów z API Discorda
-async function fetchServers(token) {
-    const response = await fetch('https://discord.com/api/users/@me/guilds', {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    const guilds = await response.json();
-    const list = document.getElementById('serverList');
+    <script>
+        // --- KONFIGURACJA (UZUPEŁNIJ!) ---
+        const CLIENT_ID = "1496484669573566564"; 
+        const REDIRECT_URI = window.location.origin + window.location.pathname;
+        const BOT_API_URL = "node.zytrano.top:7023"; 
 
-    // Filtrujemy: tylko serwery gdzie user ma Admina (0x8)
-    const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
+        // 1. Logowanie Discord
+        function loginDiscord() {
+            const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
+            window.location.href = url;
+        }
 
-    adminGuilds.forEach(g => {
-        const div = document.createElement('div');
-        div.className = 'btn rules-btn';
-        div.style.marginBottom = '10px';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.innerHTML = `
-            <span>${g.name}</span>
-            <button onclick="openConfig('${g.id}', '${g.name}')" style="background:var(--primary); border:none; color:white; border-radius:5px; cursor:pointer;">USTAW</button>
-        `;
-        list.appendChild(div);
-    });
-}
+        // 2. Obsługa po powrocie z Discorda
+        window.onload = () => {
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            const token = fragment.get('access_token');
 
-function openConfig(id, name) {
-    document.getElementById('confGuildId').value = id;
-    document.getElementById('confGuildName').innerText = name;
-    openModal('configModal');
-}
+            if (token) {
+                document.getElementById('loginBtn').style.display = 'none';
+                const sList = document.getElementById('serverList');
+                sList.style.display = 'flex';
+                fetchServers(token);
+            }
+        };
 
-// 4. Wysyłanie danych do Twojego bota na hostingu
-async function saveToBot() {
-    const data = {
-        guild_id: document.getElementById('confGuildId').value,
-        cmd: document.getElementById('cmdName').value,
-        title: document.getElementById('embedTitle').value,
-        desc: document.getElementById('embedDesc').value
-    };
+        // 3. Pobieranie serwerów
+        async function fetchServers(token) {
+            try {
+                const response = await fetch('https://discord.com/api/users/@me/guilds', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const guilds = await response.json();
+                const container = document.getElementById('serverList');
 
-    try {
-        const res = await fetch(BOT_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if(res.ok) alert("✅ Bot otrzymał konfigurację!");
-    } catch (e) {
-        alert("❌ Błąd połączenia z botem. Sprawdź czy bot działa i ma otwarty port.");
-    }
-}
-</script>
+                // Tylko serwery z Administratorem
+                const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
+
+                adminGuilds.forEach(g => {
+                    const item = document.createElement('div');
+                    item.className = 'server-item';
+                    item.innerHTML = `
+                        <span>${g.name}</span>
+                        <button onclick="openConfig('${g.id}', '${g.name}')" style="background:var(--primary); border:none; color:white; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">USTAW</button>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (err) { console.error("Błąd API Discorda"); }
+        }
+
+        function openConfig(id, name) {
+            document.getElementById('confGuildId').value = id;
+            document.getElementById('confGuildName').innerText = name;
+            openModal('configModal');
+        }
+
+        // 4. Wysyłka do bota na hostingu
+        async function sendToBot() {
+            const btn = event.target;
+            btn.innerText = "WYSYŁANIE...";
+            
+            const data = {
+                guild_id: document.getElementById('confGuildId').value,
+                cmd: document.getElementById('cmdName').value.replace("/", ""),
+                title: document.getElementById('ticketTitle').value,
+                desc: document.getElementById('ticketDesc').value
+            };
+
+            try {
+                const res = await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    alert("✅ Sukces! Komenda została zapisana.");
+                    closeModal('configModal');
+                }
+            } catch (e) {
+                alert("❌ Błąd: Bot nie odpowiada. Sprawdź IP/Port i CORS.");
+            } finally { btn.innerText = "AKTYWUJ W BOCIE"; }
+        }
+
+        // Funkcje Modali (Twoje oryginalne)
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = 'block';
+            setTimeout(() => m.style.opacity = '1', 10);
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.style.opacity = '0';
+            setTimeout(() => m.style.display = 'none', 300);
+        }
+
+        // Animacja tła (Twoja oryginalna)
+        const particles = document.getElementById('particles-js');
+        for (let i = 0; i < 40; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.top = Math.random() * 100 + '%';
+            const size = Math.random() * 3 + 'px';
+            dot.style.width = size; dot.style.height = size;
+            dot.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+            particles.appendChild(dot);
+        }
+    </script>
+</body>
+</html>
