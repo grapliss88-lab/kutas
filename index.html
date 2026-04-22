@@ -101,7 +101,7 @@
         const API = "http://152.53.179.161:7023/api";
         let token, curGuild, allCmds = [];
 
-        function login() { window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent('https://bot.mmcode.online/')}&response_type=token&scope=identify%20guilds`; }
+        function login() { window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent('http://bot.mmcode.online')}&response_type=token&scope=identify%20guilds`; }
 
         window.onload = () => {
             const p = new URLSearchParams(window.location.hash.slice(1));
