@@ -76,10 +76,17 @@
             const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
             const guilds = await res.json();
             const list = document.getElementById('guild-list');
+    
+            // Link do zaproszenia bota (wstaw swoje CLIENT_ID)
+            const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;
+
             list.innerHTML = guilds.filter(g => (g.permissions & 0x8) === 0x8).map(g => `
                 <div class="server-item">
                     <span>${g.name}</span>
-                    <button class="btn btn-primary" onclick="selectGuild('${g.id}')">ZARZĄDZAJ</button>
+                    <div>
+                        <a href="${inviteUrl}&guild_id=${g.id}" target="_blank" class="btn btn-add" style="text-decoration:none; font-size:12px;">+ DODAJ BOTA</a>
+                        <button class="btn btn-primary" onclick="selectGuild('${g.id}')">ZARZĄDZAJ</button>
+                    </div>
                 </div>
             `).join('');
         }
