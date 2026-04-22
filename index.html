@@ -110,10 +110,28 @@
         }
 
         async function loadGuilds() {
-            const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
-            const guilds = await res.json();
-            document.getElementById('guild-list').innerHTML = guilds.filter(g=>(g.permissions & 0x8)===0x8).map(g=>`
-                <div class="cmd-item"><span>${g.name}</span><button class="btn-main" style="padding:5px 15px; font-size:12px;" onclick="selectGuild('${g.id}')">ZARZĄDZAJ</button></div>
+            const res = await fetch('https://discord.com/api/users/@me/guilds', { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            const guilds = await res.json(); 
+            const MY_BOT_ID = "1496484669573566564"; 
+            const inviteBase = `https://discord.com/api/oauth2/authorize?client_id=${MY_BOT_ID}&permissions=8&scope=bot%20applications.commands`;
+            const list = document.getElementById('guild-list');
+    
+            list.innerHTML = guilds.filter(g => (g.permissions & 0x8) === 0x8).map(g => `
+                <div class="cmd-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                    <span>${g.name}</span>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="${inviteBase}&guild_id=${g.id}" target="_blank" class="btn-main" 
+                           style="padding: 5px 15px; font-size: 12px; background: #2ecc71; text-decoration: none; display: flex; align-items: center;">
+                           + DODAJ BOTA
+                        </a>
+                        <button class="btn-main" style="padding: 5px 15px; font-size: 12px;" 
+                                onclick="selectGuild('${g.id}')">
+                                ZARZĄDZAJ
+                        </button>
+                    </div>
+                </div>
             `).join('');
         }
 
