@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mmcode | Advanced Bot Panel</title>
+    <title>mmcode | Panel Sterowania</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #7d5fff; --bg: #0b0518; --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; background: radial-gradient(circle at 50% 50%, #1e123a 0%, #0b0518 100%); }
-        #particles-js { position: fixed; width: 100%; height: 100%; z-index: -1; top:0; left:0; }
-        .container { width: 95%; max-width: 900px; z-index: 10; padding: 40px 0; }
-        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 20px; }
-        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; color: white; text-transform: uppercase; }
-        .btn-discord { background: #5865F2; width: 100%; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        .container { width: 90%; max-width: 800px; padding: 40px 0; z-index: 5; }
+        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; margin-bottom: 20px; }
+        h1 span { color: var(--primary); }
+        .btn { padding: 12px 25px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; color: white; text-transform: uppercase; }
         .btn-primary { background: var(--primary); width: 100%; margin-top: 20px; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; color: white; box-sizing: border-box; font-family: inherit; }
-        .option-box { background: rgba(255,255,255,0.03); border: 1px dashed var(--primary); padding: 20px; border-radius: 15px; margin-top: 15px; position: relative; animation: fadeIn 0.3s ease; }
-        .remove-opt { position: absolute; top: 10px; right: 15px; color: #ff4d4d; cursor: pointer; font-weight: bold; }
+        .option-box { background: rgba(255,255,255,0.03); border: 1px dashed var(--primary); padding: 20px; border-radius: 15px; margin-top: 15px; position: relative; }
+        .remove-opt { position: absolute; top: 10px; right: 15px; color: #ff4d4d; cursor: pointer; font-size: 0.8rem; }
         .embed-preview { border-left: 4px solid var(--primary); background: #2f3136; padding: 15px; border-radius: 4px; margin: 10px 0; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .server-item { background: var(--glass); border: 1px solid var(--glass-border); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .server-item { background: var(--glass); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div id="particles-js"></div>
     <div class="container">
         <div id="login-section" class="card" style="text-align: center;">
-            <h1 style="font-size: 3rem; margin-bottom: 10px;">mmcode<span>.panel</span></h1>
-            <button class="btn btn-discord" onclick="loginDiscord()">ZALOGUJ PRZEZ DISCORD</button>
+            <h1>mmcode<span>.panel</span></h1>
+            <p>Zaloguj się, aby zarządzać swoimi botami</p>
+            <button class="btn" style="background: #5865F2; width: 100%;" onclick="loginDiscord()">ZALOGUJ PRZEZ DISCORD</button>
         </div>
 
         <div id="dashboard" style="display:none;">
-            <div class="card"><h3>Twoje Serwery (Admin)</h3><div id="serverList"></div></div>
+            <div class="card">
+                <h3>Wybierz Serwer</h3>
+                <div id="serverList"></div>
+            </div>
 
             <div id="editor" class="card" style="display:none;">
-                <h2 id="targetServer" style="color:var(--primary); margin-top:0;">Konfiguracja</h2>
+                <h2 id="targetServer">Serwer</h2>
                 <input type="text" id="cmdName" placeholder="Nazwa komendy (np. pomoc)">
                 
                 <div class="embed-preview">
-                    <p style="font-size: 0.8rem; opacity: 0.6; margin: 0 0 5px 0;">Wiadomość główna (z listą)</p>
-                    <input type="text" id="mainTitle" placeholder="Tytuł embeda głównego">
-                    <textarea id="mainDesc" placeholder="Opis embeda głównego..."></textarea>
+                    <p style="font-size: 0.7rem; opacity: 0.5; margin: 0;">Główna wiadomość z listą</p>
+                    <input type="text" id="mainTitle" placeholder="Tytuł embeda">
+                    <textarea id="mainDesc" placeholder="Opis embeda..."></textarea>
                 </div>
 
-                <div id="optionsContainer"></div>
-                <button class="btn" style="background: #2ecc71; width: 100%; margin-top: 10px;" onclick="addOption()">+ DODAJ OPCJĘ DO TICKETA</button>
+                <div id="optionsContainer">
+                    <h4>Opcje w liście rozwijanej:</h4>
+                </div>
+                <button class="btn" style="background: #2ecc71; width: 100%; margin-top: 10px;" onclick="addOption()">+ DODAJ NOWĄ OPCJĘ</button>
 
-                <button class="btn btn-primary" onclick="saveConfig()">ZAPISZ I WYŚLIJ DO BOTA</button>
+                <button class="btn btn-primary" onclick="saveConfig()">ZAPISZ I AKTYWUJ</button>
             </div>
         </div>
     </div>
@@ -75,19 +78,18 @@
             const guilds = await res.json();
             const list = document.getElementById('serverList');
             guilds.filter(g => (g.permissions & 0x8) === 0x8).forEach(g => {
-                list.innerHTML += `<div class="server-item"><span>${g.name}</span><button class="btn" style="background:var(--primary)" onclick="openEditor('${g.id}', '${g.name}')">EDYTUJ</button></div>`;
+                list.innerHTML += `<div class="server-item"><span>${g.name}</span><button class="btn" style="background:var(--primary); padding: 5px 10px;" onclick="openEditor('${g.id}', '${g.name}')">EDYTUJ</button></div>`;
             });
         }
 
-        let optId = 0;
         function addOption() {
-            optId++;
+            const id = Date.now();
             const html = `
-                <div class="option-box" id="box_${optId}">
-                    <span class="remove-opt" onclick="this.parentElement.remove()">USUŃ</span>
-                    <input type="text" class="opt-label" placeholder="Nazwa na liście (np. Pomoc techniczna)">
+                <div class="option-box" id="${id}">
+                    <span class="remove-opt" onclick="document.getElementById('${id}').remove()">USUŃ</span>
+                    <input type="text" class="opt-label" placeholder="Nazwa na liście (np. Kontakt)">
                     <div class="embed-preview" style="border-color: #2ecc71">
-                        <p style="font-size: 0.7rem; opacity: 0.6; margin: 0 0 5px 0;">Embed wewnątrz otwartego ticketa</p>
+                        <p style="font-size: 0.7rem; opacity: 0.5; margin: 0;">Embed wewnątrz ticketa</p>
                         <input type="text" class="opt-title" placeholder="Tytuł w tickecie">
                         <textarea class="opt-desc" placeholder="Treść wiadomości w tickecie..."></textarea>
                     </div>
@@ -98,9 +100,8 @@
         let currentGuild = "";
         function openEditor(id, name) {
             currentGuild = id;
-            document.getElementById('targetServer').innerText = "Serwer: " + name;
+            document.getElementById('targetServer').innerText = name;
             document.getElementById('editor').style.display = 'block';
-            window.scrollTo({ top: document.getElementById('editor').offsetTop, behavior: 'smooth' });
         }
 
         async function saveConfig() {
@@ -127,9 +128,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                if(res.ok) alert("✅ Konfiguracja zapisana pomyślnie!");
-            } catch(e) { 
-                alert("❌ Błąd połączenia! Sprawdź czy bot działa na 152.53.179.161:7023"); 
+                if(res.ok) alert("✅ Zapisano pomyślnie!");
+                else alert("❌ Błąd serwera: " + res.status);
+            } catch(e) {
+                alert("❌ Brak połączenia z botem! Sprawdź czy bot działa i czy nie masz blokady Mixed Content.");
             }
         }
     </script>
