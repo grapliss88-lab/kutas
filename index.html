@@ -2,137 +2,149 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mmcode | Panel Sterowania</title>
+    <title>mmcode.panel | Zarządzanie Ticketami</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #7d5fff; --bg: #0b0518; --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 800px; padding: 40px 0; z-index: 5; }
-        .card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; margin-bottom: 20px; }
-        h1 span { color: var(--primary); }
-        .btn { padding: 12px 25px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; color: white; text-transform: uppercase; }
-        .btn-primary { background: var(--primary); width: 100%; margin-top: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; color: white; box-sizing: border-box; font-family: inherit; }
-        .option-box { background: rgba(255,255,255,0.03); border: 1px dashed var(--primary); padding: 20px; border-radius: 15px; margin-top: 15px; position: relative; }
-        .remove-opt { position: absolute; top: 10px; right: 15px; color: #ff4d4d; cursor: pointer; font-size: 0.8rem; }
-        .embed-preview { border-left: 4px solid var(--primary); background: #2f3136; padding: 15px; border-radius: 4px; margin: 10px 0; }
-        .server-item { background: var(--glass); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        :root { --primary: #7d5fff; --bg: #0b0518; --card: rgba(255,255,255,0.05); }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 900px; }
+        .card { background: var(--card); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-save { background: var(--primary); width: 100%; margin-top: 15px; }
+        .btn-add { background: #2ecc71; margin-bottom: 15px; }
+        .btn-del { background: #e74c3c; padding: 5px 10px; font-size: 12px; }
+        .option-box { border: 1px solid var(--primary); padding: 15px; border-radius: 10px; margin-top: 15px; position: relative; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="login-section" class="card" style="text-align: center;">
-            <h1>mmcode<span>.panel</span></h1>
-            <p>Zaloguj się, aby zarządzać swoimi botami</p>
-            <button class="btn" style="background: #5865F2; width: 100%;" onclick="loginDiscord()">ZALOGUJ PRZEZ DISCORD</button>
+        <h1>mmcode<span>.panel</span></h1>
+        
+        <div id="login-box" class="card">
+            <button class="btn btn-save" onclick="login()">ZALOGUJ PRZEZ DISCORD</button>
         </div>
 
-        <div id="dashboard" style="display:none;">
+        <div id="panel" style="display:none;">
             <div class="card">
-                <h3>Wybierz Serwer</h3>
-                <div id="serverList"></div>
+                <h3>Twoje aktywne komendy na serwerze:</h3>
+                <div id="cmd-list"></div>
             </div>
 
-            <div id="editor" class="card" style="display:none;">
-                <h2 id="targetServer">Serwer</h2>
+            <div class="card">
+                <h2>Konfigurator Komendy</h2>
                 <input type="text" id="cmdName" placeholder="Nazwa komendy (np. pomoc)">
+                <input type="text" id="mainTitle" placeholder="Tytuł głównego Embeda">
+                <textarea id="mainDesc" placeholder="Opis głównego Embeda"></textarea>
+                <input type="text" id="mainImg" placeholder="URL dużego zdjęcia w głównym Embedzie (opcjonalnie)">
                 
-                <div class="embed-preview">
-                    <p style="font-size: 0.7rem; opacity: 0.5; margin: 0;">Główna wiadomość z listą</p>
-                    <input type="text" id="mainTitle" placeholder="Tytuł embeda">
-                    <textarea id="mainDesc" placeholder="Opis embeda..."></textarea>
-                </div>
-
-                <div id="optionsContainer">
-                    <h4>Opcje w liście rozwijanej:</h4>
-                </div>
-                <button class="btn" style="background: #2ecc71; width: 100%; margin-top: 10px;" onclick="addOption()">+ DODAJ NOWĄ OPCJĘ</button>
-
-                <button class="btn btn-primary" onclick="saveConfig()">ZAPISZ I AKTYWUJ</button>
+                <div id="options-container"></div>
+                <button class="btn btn-add" onclick="addOption()">+ DODAJ OPCJĘ TICKETA</button>
+                <button class="btn btn-save" onclick="saveConfig()">ZAPISZ I AKTYWUJ KOMENDĘ</button>
             </div>
         </div>
     </div>
 
     <script>
-        const CLIENT_ID = "1496484669573566564"; 
-        const REDIRECT_URI = "http://bot.mmcode.online/";
-        const BOT_API = "http://152.53.179.161:7023/api";
+        const CLIENT_ID = "1496484669573566564";
+        const REDIRECT_URI = "https://bot.mmcode.online/";
+        const API = "http://152.53.179.161:7023/api";
+        let curToken = "";
+        let curGuild = "";
 
-        function loginDiscord() {
-            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds&prompt=login`;
+        function login() {
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
         }
 
-        window.onload = () => {
+        window.onload = async () => {
             const params = new URLSearchParams(window.location.hash.slice(1));
-            const token = params.get('access_token');
-            if (token) {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                fetchGuilds(token);
+            curToken = params.get('access_token');
+            if(curToken) {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('panel').style.display = 'block';
+                loadGuilds();
             }
         };
 
-        async function fetchGuilds(token) {
-            const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
+        async function loadGuilds() {
+            const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${curToken}` } });
             const guilds = await res.json();
-            const list = document.getElementById('serverList');
-            guilds.filter(g => (g.permissions & 0x8) === 0x8).forEach(g => {
-                list.innerHTML += `<div class="server-item"><span>${g.name}</span><button class="btn" style="background:var(--primary); padding: 5px 10px;" onclick="openEditor('${g.id}', '${g.name}')">EDYTUJ</button></div>`;
-            });
+            curGuild = guilds.find(g => (g.permissions & 0x8) === 0x8).id;
+            refreshCmds();
+        }
+
+        async function refreshCmds() {
+            const res = await fetch(`${API}/list/${curGuild}`);
+            const data = await res.json();
+            const div = document.getElementById('cmd-list');
+            div.innerHTML = data.map(c => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; background:rgba(0,0,0,0.2); padding:10px; border-radius:5px;">
+                    <span>/${c.cmd}</span>
+                    <button class="btn btn-del" onclick="deleteCmd('${c.cmd}')">USUŃ</button>
+                </div>
+            `).join('');
         }
 
         function addOption() {
             const id = Date.now();
             const html = `
                 <div class="option-box" id="${id}">
-                    <span class="remove-opt" onclick="document.getElementById('${id}').remove()">USUŃ</span>
-                    <input type="text" class="opt-label" placeholder="Nazwa na liście (np. Kontakt)">
-                    <div class="embed-preview" style="border-color: #2ecc71">
-                        <p style="font-size: 0.7rem; opacity: 0.5; margin: 0;">Embed wewnątrz ticketa</p>
-                        <input type="text" class="opt-title" placeholder="Tytuł w tickecie">
-                        <textarea class="opt-desc" placeholder="Treść wiadomości w tickecie..."></textarea>
+                    <div class="grid">
+                        <input type="text" class="o-label" placeholder="Nazwa w menu (np. Pomoc Techniczna)">
+                        <input type="text" class="o-role" placeholder="ID Roli do pingowania/widzenia">
+                        <input type="text" class="o-cat" placeholder="ID Kategorii kanału">
+                        <input type="text" class="o-title" placeholder="Tytuł wewnątrz ticketa">
                     </div>
+                    <textarea class="o-desc" placeholder="Opis wewnątrz ticketa"></textarea>
+                    <div class="grid">
+                        <input type="text" class="o-thumb" placeholder="URL małej ikony (Thumbnail)">
+                        <input type="text" class="o-img" placeholder="URL dużego zdjęcia (Szeroki embed)">
+                    </div>
+                    <button class="btn btn-del" onclick="document.getElementById('${id}').remove()">USUŃ TĘ OPCJĘ</button>
                 </div>`;
-            document.getElementById('optionsContainer').insertAdjacentHTML('beforeend', html);
-        }
-
-        let currentGuild = "";
-        function openEditor(id, name) {
-            currentGuild = id;
-            document.getElementById('targetServer').innerText = name;
-            document.getElementById('editor').style.display = 'block';
+            document.getElementById('options-container').insertAdjacentHTML('beforeend', html);
         }
 
         async function saveConfig() {
             const options = [];
-            document.querySelectorAll('.option-box').forEach(box => {
+            document.querySelectorAll('.option-box').forEach(b => {
                 options.push({
-                    label: box.querySelector('.opt-label').value,
-                    ticket_title: box.querySelector('.opt-title').value,
-                    ticket_desc: box.querySelector('.opt-desc').value
+                    label: b.querySelector('.o-label').value,
+                    role_id: b.querySelector('.o-role').value,
+                    category_id: b.querySelector('.o-cat').value,
+                    ticket_title: b.querySelector('.o-title').value,
+                    ticket_desc: b.querySelector('.o-desc').value,
+                    thumbnail: b.querySelector('.o-thumb').value,
+                    image: b.querySelector('.o-img').value
                 });
             });
 
             const data = {
-                guild_id: currentGuild,
+                guild_id: curGuild,
                 cmd: document.getElementById('cmdName').value,
                 main_title: document.getElementById('mainTitle').value,
                 main_desc: document.getElementById('mainDesc').value,
+                main_image: document.getElementById('mainImg').value,
                 options: options
             };
 
-            try {
-                const res = await fetch(`${BOT_API}/save`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if(res.ok) alert("✅ Zapisano pomyślnie!");
-                else alert("❌ Błąd serwera: " + res.status);
-            } catch(e) {
-                alert("❌ Brak połączenia z botem! Sprawdź czy bot działa i czy nie masz blokady Mixed Content.");
-            }
+            await fetch(`${API}/save`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert("Zapisano!");
+            refreshCmds();
+        }
+
+        async function deleteCmd(cmd) {
+            await fetch(`${API}/delete`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({guild_id: curGuild, cmd: cmd})
+            });
+            refreshCmds();
         }
     </script>
 </body>
