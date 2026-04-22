@@ -1,0 +1,37 @@
+<div class="card">
+    <h2>Konfiguracja Ticketów</h2>
+    <input type="text" id="guildId" placeholder="ID Serwera">
+    <input type="text" id="cmdName" placeholder="Nazwa komendy (np. gowno)">
+    <input type="text" id="ticketTitle" placeholder="Tytuł Embedu">
+    <textarea id="ticketDesc" placeholder="Opis..."></textarea>
+    
+    <button class="btn" onclick="saveToBot()">ZAPISZ I WYŚLIJ DO BOTA</button>
+</div>
+
+<script>
+async function saveToBot() {
+    const data = {
+        guild_id: document.getElementById('guildId').value,
+        command_name: document.getElementById('cmdName').value,
+        title: document.getElementById('ticketTitle').value,
+        description: document.getElementById('ticketDesc').value
+    };
+
+    // ZMIEŃ ADRES PONIŻEJ na IP swojego serwera, gdzie działa bot!
+    const SERVER_IP = "node.zytrano.top:7023";
+
+    try {
+        const response = await fetch(SERVER_IP, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        alert("Bot otrzymał dane: " + result.message);
+    } catch (error) {
+        alert("Błąd połączenia z botem! Upewnij się, że serwer bota działa.");
+        console.error(error);
+    }
+}
+</script>
