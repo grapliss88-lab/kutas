@@ -2,46 +2,50 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>mmcode.panel | Zarządzanie Ticketami</title>
+    <title>bot.mmcode.online | Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #7d5fff; --bg: #0b0518; --card: rgba(255,255,255,0.05); }
+        :root { --primary: #7d5fff; --bg: #0b0518; --card: rgba(255,255,255,0.05); --danger: #ff4d4d; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 900px; }
-        .card { background: var(--card); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .btn-save { background: var(--primary); width: 100%; margin-top: 15px; }
+        .card { background: var(--card); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin-bottom: 20px; position: relative; }
+        h1 span { color: var(--primary); }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; box-sizing: border-box; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; color: white; }
+        .btn-save { background: var(--primary); width: 100%; margin-top: 20px; font-size: 1.1rem; }
         .btn-add { background: #2ecc71; margin-bottom: 15px; }
-        .btn-del { background: #e74c3c; padding: 5px 10px; font-size: 12px; }
-        .option-box { border: 1px solid var(--primary); padding: 15px; border-radius: 10px; margin-top: 15px; position: relative; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-del { background: var(--danger); }
+        .btn-edit { background: #f1c40f; color: black; margin-right: 10px; }
+        .option-box { border-left: 4px solid var(--primary); background: rgba(255,255,255,0.02); padding: 20px; border-radius: 0 10px 10px 0; margin-top: 15px; }
+        .cmd-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(125, 95, 255, 0.2); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>mmcode<span>.panel</span></h1>
+        <h1>bot.mmcode<span>.online</span></h1>
         
-        <div id="login-box" class="card">
+        <div id="login-box" class="card" style="text-align: center;">
+            <p>Zaloguj się, aby zarządzać ticketami</p>
             <button class="btn btn-save" onclick="login()">ZALOGUJ PRZEZ DISCORD</button>
         </div>
 
         <div id="panel" style="display:none;">
             <div class="card">
-                <h3>Twoje aktywne komendy na serwerze:</h3>
+                <h3>Aktywne komendy na serwerze:</h3>
                 <div id="cmd-list"></div>
             </div>
 
             <div class="card">
-                <h2>Konfigurator Komendy</h2>
-                <input type="text" id="cmdName" placeholder="Nazwa komendy (np. pomoc)">
-                <input type="text" id="mainTitle" placeholder="Tytuł głównego Embeda">
-                <textarea id="mainDesc" placeholder="Opis głównego Embeda"></textarea>
-                <input type="text" id="mainImg" placeholder="URL dużego zdjęcia w głównym Embedzie (opcjonalnie)">
+                <h2 id="editor-title">Dodaj nową komendę</h2>
+                <input type="text" id="cmdName" placeholder="Nazwa komendy (np. ticket)">
+                <input type="text" id="mainTitle" placeholder="Tytuł wiadomości głównej">
+                <textarea id="mainDesc" placeholder="Opis wiadomości głównej (np. Kliknij poniżej, aby otworzyć ticket)"></textarea>
+                <input type="text" id="mainImg" placeholder="URL dużego zdjęcia (Main Image)">
                 
                 <div id="options-container"></div>
                 <button class="btn btn-add" onclick="addOption()">+ DODAJ OPCJĘ TICKETA</button>
-                <button class="btn btn-save" onclick="saveConfig()">ZAPISZ I AKTYWUJ KOMENDĘ</button>
+                <button class="btn btn-save" onclick="saveConfig()">ZAPISZ I AKTYWUJ</button>
             </div>
         </div>
     </div>
@@ -52,6 +56,7 @@
         const API = "http://152.53.179.161:7023/api";
         let curToken = "";
         let curGuild = "";
+        let allCmds = [];
 
         function login() {
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
@@ -63,11 +68,11 @@
             if(curToken) {
                 document.getElementById('login-box').style.display = 'none';
                 document.getElementById('panel').style.display = 'block';
-                loadGuilds();
+                fetchGuilds();
             }
         };
 
-        async function loadGuilds() {
+        async function fetchGuilds() {
             const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${curToken}` } });
             const guilds = await res.json();
             curGuild = guilds.find(g => (g.permissions & 0x8) === 0x8).id;
@@ -76,34 +81,48 @@
 
         async function refreshCmds() {
             const res = await fetch(`${API}/list/${curGuild}`);
-            const data = await res.json();
-            const div = document.getElementById('cmd-list');
-            div.innerHTML = data.map(c => `
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; background:rgba(0,0,0,0.2); padding:10px; border-radius:5px;">
-                    <span>/${c.cmd}</span>
-                    <button class="btn btn-del" onclick="deleteCmd('${c.cmd}')">USUŃ</button>
+            allCmds = await res.json();
+            document.getElementById('cmd-list').innerHTML = allCmds.map(c => `
+                <div class="cmd-item">
+                    <strong>/${c.cmd}</strong>
+                    <div>
+                        <button class="btn btn-edit" onclick="editCmd('${c.cmd}')">EDYTUJ</button>
+                        <button class="btn btn-del" onclick="deleteCmd('${c.cmd}')">USUŃ</button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function addOption() {
-            const id = Date.now();
+        function addOption(data = {}) {
+            const id = Date.now() + Math.random();
             const html = `
                 <div class="option-box" id="${id}">
                     <div class="grid">
-                        <input type="text" class="o-label" placeholder="Nazwa w menu (np. Pomoc Techniczna)">
-                        <input type="text" class="o-role" placeholder="ID Roli do pingowania/widzenia">
-                        <input type="text" class="o-cat" placeholder="ID Kategorii kanału">
-                        <input type="text" class="o-title" placeholder="Tytuł wewnątrz ticketa">
+                        <input type="text" class="o-label" placeholder="Nazwa w menu" value="${data.label || ''}">
+                        <input type="text" class="o-role" placeholder="ID Roli (Ping/Dostęp)" value="${data.role_id || ''}">
+                        <input type="text" class="o-cat" placeholder="ID Kategorii" value="${data.category_id || ''}">
+                        <input type="text" class="o-title" placeholder="Tytuł wewnątrz ticketa" value="${data.ticket_title || ''}">
                     </div>
-                    <textarea class="o-desc" placeholder="Opis wewnątrz ticketa"></textarea>
+                    <textarea class="o-desc" placeholder="Opis wewnątrz ticketa">${data.ticket_desc || ''}</textarea>
                     <div class="grid">
-                        <input type="text" class="o-thumb" placeholder="URL małej ikony (Thumbnail)">
-                        <input type="text" class="o-img" placeholder="URL dużego zdjęcia (Szeroki embed)">
+                        <input type="text" class="o-thumb" placeholder="Miniaturka (URL)" value="${data.thumbnail || ''}">
+                        <input type="text" class="o-img" placeholder="Duże zdjęcie (URL)" value="${data.image || ''}">
                     </div>
-                    <button class="btn btn-del" onclick="document.getElementById('${id}').remove()">USUŃ TĘ OPCJĘ</button>
+                    <button class="btn btn-del" style="margin-top:10px" onclick="document.getElementById('${id}').remove()">USUŃ OPCJĘ</button>
                 </div>`;
             document.getElementById('options-container').insertAdjacentHTML('beforeend', html);
+        }
+
+        function editCmd(cmdName) {
+            const cmd = allCmds.find(c => c.cmd === cmdName);
+            document.getElementById('cmdName').value = cmd.cmd;
+            document.getElementById('mainTitle').value = cmd.main_title;
+            document.getElementById('mainDesc').value = cmd.main_desc;
+            document.getElementById('mainImg').value = cmd.main_image || '';
+            document.getElementById('options-container').innerHTML = '';
+            cmd.options.forEach(o => addOption(o));
+            document.getElementById('editor-title').innerText = "Edytujesz: /" + cmdName;
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
         async function saveConfig() {
@@ -136,9 +155,11 @@
             });
             alert("Zapisano!");
             refreshCmds();
+            location.reload(); // Reset formularza
         }
 
         async function deleteCmd(cmd) {
+            if(!confirm("Na pewno usunąć?")) return;
             await fetch(`${API}/delete`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
