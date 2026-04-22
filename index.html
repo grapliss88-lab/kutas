@@ -5,69 +5,129 @@
     <title>bot.mmcode.online | Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #7d5fff; --bg: #0b0518; --card: rgba(255,255,255,0.05); }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 900px; }
-        .card { background: var(--card); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; transition: 0.3s; }
-        .btn-primary { background: var(--primary); }
-        .btn-add { background: #2ecc71; }
-        .btn-danger { background: #e74c3c; }
-        .server-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: white; }
-        .option-box { border-left: 3px solid var(--primary); padding-left: 15px; margin-top: 15px; background: rgba(255,255,255,0.02); padding: 10px; }
+        :root { --primary: #7d5fff; --bg: #05020a; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; overflow-x: hidden; }
+        
+        /* Tło z kropkami */
+        #bg-canvas { position: fixed; top:0; left:0; z-index: -1; }
+
+        .container { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        
+        .card { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 100%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        h1 { font-size: 2.5rem; margin-bottom: 10px; text-align: center; }
+        h1 span { color: var(--primary); text-shadow: 0 0 15px var(--primary); }
+
+        .back-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; margin-bottom: 20px; transition: 0.3s; border-bottom: 1px solid transparent; }
+        .back-link:hover { color: var(--primary); border-bottom: 1px solid var(--primary); }
+
+        /* Animowany przycisk */
+        .btn-login { 
+            background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 50px; 
+            font-weight: 600; cursor: pointer; font-size: 1.1rem; transition: 0.4s;
+            animation: pulse 2s infinite; box-shadow: 0 0 0 0 rgba(125, 95, 255, 0.7);
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(125, 95, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(125, 95, 255, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(125, 95, 255, 0); }
+        }
+        .btn-login:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(125, 95, 255, 0.4); }
+
+        /* Stylizacja pól panelu */
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; }
+        .option-box { border-left: 4px solid var(--primary); padding: 15px; margin-top: 15px; background: rgba(255,255,255,0.02); }
+        .btn-small { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; margin: 5px; }
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
+
     <div class="container">
-        <h1>bot.mmcode<span>.online</span></h1>
-
-        <div id="login-box" class="card">
-            <button class="btn btn-primary" onclick="login()">ZALOGUJ PRZEZ DISCORD</button>
+        <a href="https://www.mmcode.online" class="back-link">← powrót do strony głównej</a>
+        
+        <div id="login-screen">
+            <h1>bot.mmcode<span>.online</span></h1>
+            <button class="btn-login" onclick="login()">ZALOGUJ SIĘ PRZEZ DISCORD</button>
         </div>
 
-        <div id="guild-selector" class="card" style="display:none;">
-            <h3>Wybierz Serwer:</h3>
-            <div id="guild-list"></div>
-        </div>
-
-        <div id="editor" style="display:none;">
-            <button class="btn btn-danger" onclick="location.reload()"> POWRÓT DO LISTY</button>
+        <div id="main-panel" style="display:none; width: 100%; max-width: 900px;">
             <div class="card">
-                <h3>Aktywne komendy na tym serwerze:</h3>
-                <div id="cmd-list"></div>
+                <h2>Twoje Serwery</h2>
+                <div id="guild-list"></div>
             </div>
 
-            <div class="card">
-                <h2 id="edit-title">Nowa Komenda</h2>
-                <input type="text" id="cmdName" placeholder="Nazwa komendy (np. ticket)">
-                <input type="text" id="mainTitle" placeholder="Tytuł embeda">
-                <textarea id="mainDesc" placeholder="Opis embeda..."></textarea>
-                <input type="text" id="mainImage" placeholder="URL dużego zdjęcia">
+            <div id="editor" class="card" style="display:none;">
+                <h2 id="edit-title">Konfiguracja</h2>
+                <input type="text" id="cmdName" placeholder="Komenda (np. ticket)">
+                <input type="text" id="mainTitle" placeholder="Tytuł embeda głównego">
+                <textarea id="mainDesc" placeholder="Opis embeda głównego..."></textarea>
+                <input type="text" id="mainImg" placeholder="URL dużego zdjęcia (Main Image)">
                 
                 <div id="options-container"></div>
-                <button class="btn btn-add" onclick="addOption()">+ DODAJ OPCJĘ</button>
-                <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="saveConfig()">ZAPISZ</button>
+                <button class="btn-small" style="background:#2ecc71" onclick="addOption()">+ Dodaj Opcję</button>
+                <button class="btn-login" style="width:100%; margin-top:20px; animation:none;" onclick="saveConfig()">ZAPISZ ZMIANY</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- ANIMACJA KROPEK ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speed = Math.random() * 0.5 + 0.1;
+                this.alpha = Math.random();
+                this.fade = Math.random() * 0.02;
+            }
+            update() {
+                this.y -= this.speed;
+                this.alpha -= this.fade;
+                if (this.alpha <= 0 || this.y < 0) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(125, 95, 255, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for(let i=0; i<100; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- LOGIKA PANELU ---
         const CLIENT_ID = "1496484669573566564";
         const REDIRECT_URI = "http://bot.mmcode.online";
         const API = "http://152.53.179.161:7023/api";
-        let token, curGuild, allCmds = [];
+        let token, curGuild;
 
-        function login() {
-            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`;
-        }
+        function login() { window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify%20guilds`; }
 
         window.onload = () => {
             const params = new URLSearchParams(window.location.hash.slice(1));
             token = params.get('access_token');
             if(token) {
-                document.getElementById('login-box').style.display = 'none';
-                document.getElementById('guild-selector').style.display = 'block';
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-panel').style.display = 'block';
                 loadGuilds();
             }
         };
@@ -76,16 +136,14 @@
             const res = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${token}` } });
             const guilds = await res.json();
             const list = document.getElementById('guild-list');
-    
-            // Link do zaproszenia bota (wstaw swoje CLIENT_ID)
-            const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;
+            const inviteBase = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;
 
             list.innerHTML = guilds.filter(g => (g.permissions & 0x8) === 0x8).map(g => `
-                <div class="server-item">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid rgba(255,255,255,0.05)">
                     <span>${g.name}</span>
                     <div>
-                        <a href="${inviteUrl}&guild_id=${g.id}" target="_blank" class="btn btn-add" style="text-decoration:none; font-size:12px;">+ DODAJ BOTA</a>
-                        <button class="btn btn-primary" onclick="selectGuild('${g.id}')">ZARZĄDZAJ</button>
+                        <a href="${inviteBase}&guild_id=${g.id}" target="_blank" class="btn-small" style="background:#7d5fff; text-decoration:none;">DODAJ BOTA</a>
+                        <button class="btn-small" style="background:rgba(255,255,255,0.1)" onclick="selectGuild('${g.id}')">EDYTUJ</button>
                     </div>
                 </div>
             `).join('');
@@ -93,51 +151,23 @@
 
         async function selectGuild(id) {
             curGuild = id;
-            document.getElementById('guild-selector').style.display = 'none';
             document.getElementById('editor').style.display = 'block';
-            refreshCmds();
-        }
-
-        async function refreshCmds() {
             const res = await fetch(`${API}/list/${curGuild}`);
-            allCmds = await res.json();
-            const list = document.getElementById('cmd-list');
-            list.innerHTML = allCmds.length ? allCmds.map(c => `
-                <div class="server-item">
-                    <span>/${c.cmd}</span>
-                    <div>
-                        <button class="btn btn-add" style="padding:5px" onclick="editCmd('${c.cmd}')">EDYTUJ</button>
-                        <button class="btn btn-danger" style="padding:5px" onclick="deleteCmd('${c.cmd}')">USUŃ</button>
-                    </div>
-                </div>
-            `).join('') : "Brak komend. Stwórz pierwszą!";
+            const data = await res.json();
+            if(data.length > 0) editCmd(data[0].cmd, data);
         }
 
         function addOption(d = {}) {
-            const id = Date.now() + Math.random();
+            const id = Date.now();
             document.getElementById('options-container').insertAdjacentHTML('beforeend', `
                 <div class="option-box" id="${id}">
                     <input type="text" class="o-label" placeholder="Nazwa w menu" value="${d.label||''}">
-                    <input type="text" class="o-cat" placeholder="ID Kategorii" value="${d.category_id||''}">
-                    <input type="text" class="o-role" placeholder="ID Roli" value="${d.role_id||''}">
-                    <input type="text" class="o-title" placeholder="Tytuł w tickecie" value="${d.ticket_title||''}">
-                    <textarea class="o-desc" placeholder="Opis w tickecie">${d.ticket_desc||''}</textarea>
-                    <input type="text" class="o-thumb" placeholder="Miniaturka URL" value="${d.thumbnail||''}">
-                    <input type="text" class="o-img" placeholder="Duże zdjęcie URL" value="${d.image||''}">
-                    <button class="btn btn-danger" style="width:100%" onclick="document.getElementById('${id}').remove()">USUŃ TĘ OPCJĘ</button>
+                    <input type="text" class="o-title" placeholder="Tytuł wewnątrz ticketa" value="${d.ticket_title||''}">
+                    <textarea class="o-desc" placeholder="Opis wewnątrz...">${d.ticket_desc||''}</textarea>
+                    <input type="text" class="o-img" placeholder="URL dużego zdjęcia wewnątrz" value="${d.image||''}">
+                    <button class="btn-small" style="background:#ff4d4d; width:100%" onclick="document.getElementById('${id}').remove()">USUŃ OPCJĘ</button>
                 </div>
             `);
-        }
-
-        function editCmd(name) {
-            const c = allCmds.find(x => x.cmd === name);
-            document.getElementById('cmdName').value = c.cmd;
-            document.getElementById('mainTitle').value = c.main_title;
-            document.getElementById('mainDesc').value = c.main_desc;
-            document.getElementById('mainImage').value = c.main_image || '';
-            document.getElementById('options-container').innerHTML = '';
-            c.options.forEach(o => addOption(o));
-            document.getElementById('edit-title').innerText = "Edytujesz: /" + name;
         }
 
         async function saveConfig() {
@@ -145,31 +175,21 @@
             document.querySelectorAll('.option-box').forEach(b => {
                 options.push({
                     label: b.querySelector('.o-label').value,
-                    category_id: b.querySelector('.o-cat').value,
-                    role_id: b.querySelector('.o-role').value,
                     ticket_title: b.querySelector('.o-title').value,
                     ticket_desc: b.querySelector('.o-desc').value,
-                    thumbnail: b.querySelector('.o-thumb').value,
                     image: b.querySelector('.o-img').value
                 });
             });
-            const data = {
+            const payload = {
                 guild_id: curGuild,
                 cmd: document.getElementById('cmdName').value,
                 main_title: document.getElementById('mainTitle').value,
                 main_desc: document.getElementById('mainDesc').value,
-                main_image: document.getElementById('mainImage').value,
+                main_image: document.getElementById('mainImg').value,
                 options: options
             };
-            await fetch(`${API}/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            alert("Zapisano!");
-            refreshCmds();
-        }
-
-        async function deleteCmd(cmd) {
-            if(!confirm("Usunąć?")) return;
-            await fetch(`${API}/delete`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({guild_id: curGuild, cmd: cmd}) });
-            refreshCmds();
+            await fetch(`${API}/save`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            alert("Zapisano pomyślnie!");
         }
     </script>
 </body>
